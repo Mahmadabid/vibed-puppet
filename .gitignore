@@ -1,0 +1,10 @@
+node_modules/
+dist/
+out/
+.chrome-automation/
+output/
+*.log
+.DS_Store
+Thumbs.db
+*.local
+PRIVACY.md

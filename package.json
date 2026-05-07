@@ -1,0 +1,117 @@
+{
+  "name": "vibed-puppet",
+  "version": "0.1.0",
+  "description": "Selectively remove your X/Twitter history for free without API and extract Google Form fields.",
+  "main": "./out/main/index.js",
+  "author": "Muhammad Ahmad",
+  "license": "MIT",
+  "homepage": "https://github.com/mahmadabid/vibed-puppet",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mahmadabid/vibed-puppet.git"
+  },
+  "keywords": [
+    "twitter",
+    "x",
+    "cleanup",
+    "google-forms",
+    "electron",
+    "puppeteer"
+  ],
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "dist": "electron-vite build && electron-builder",
+    "dist:win": "electron-vite build && electron-builder --win",
+    "dist:mac": "electron-vite build && electron-builder --mac",
+    "dist:linux": "electron-vite build && electron-builder --linux",
+    "typecheck": "tsc --noEmit"
+  },
+  "build": {
+    "appId": "com.vibedpuppet.app",
+    "productName": "Vibed Puppet",
+    "copyright": "Copyright © 2025 Muhammad Ahmad",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "mahmadabid",
+      "repo": "vibed-puppet"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.icns"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false
+    },
+    "files": [
+      "out/**/*",
+      "!out/**/*.map"
+    ]
+  },
+  "dependencies": {
+    "@electron-toolkit/preload": "^3.0.2",
+    "@electron-toolkit/utils": "^4.0.0",
+    "@tailwindcss/vite": "^4.2.4",
+    "electron-log": "^5.4.3",
+    "electron-updater": "^6.3.9",
+    "lucide-react": "^1.14.0",
+    "puppeteer-core": "^24.42.0",
+    "tailwindcss": "^4.2.4"
+  },
+  "devDependencies": {
+    "@electron-toolkit/eslint-config-prettier": "^3.0.0",
+    "@electron-toolkit/eslint-config-ts": "^3.1.0",
+    "@electron-toolkit/tsconfig": "^2.0.0",
+    "@types/node": "^22.19.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "electron": "^39.2.6",
+    "electron-builder": "^26.0.12",
+    "electron-vite": "^5.0.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "prettier": "^3.7.4",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.6"
+  }
+}
