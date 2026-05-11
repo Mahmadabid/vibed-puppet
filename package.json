@@ -1,7 +1,7 @@
 {
   "name": "vibed-puppet",
   "version": "0.1.0",
-  "description": "Selectively remove your X/Twitter history for free without API and extract Google Form fields.",
+  "description": "Clean up X/Twitter history and extract Google Form fields locally with Vibed Puppet.",
   "main": "./out/main/index.js",
   "author": "Muhammad Ahmad",
   "license": "MIT",

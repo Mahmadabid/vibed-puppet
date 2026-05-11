@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.vibedpuppet.app
 productName: vibed-puppet
 directories:
   buildResources: build
@@ -33,7 +33,7 @@ linux:
     - AppImage
     - snap
     - deb
-  maintainer: electronjs.org
+  maintainer: Muhammad Ahmad
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}

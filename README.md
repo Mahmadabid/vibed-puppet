@@ -5,8 +5,19 @@
 <h1 align="center">vibed puppet</h1>
 
 <p align="center">
-  A desktop app for cleaning up your X/Twitter history and extracting Google Form fields.
+  Clean up X/Twitter history and extract Google Form fields locally, with a desktop app built for fast, private workflow.
 </p>
+
+<p align="center">
+  It helps you:
+</p>
+
+<ul>
+  <li>Delete posts, replies, reposts, media, likes, and highlights in bulk</li>
+  <li>Filter cleanup by date, keywords, replies, engagement, and pinned posts</li>
+  <li>Extract Google Form field IDs, labels, types, and options in one place</li>
+  <li>Keep everything on your machine with no API required</li>
+</ul>
 
 <p align="center">
   <a href="https://github.com/mahmadabid/vibed-puppet/releases"><img src="https://img.shields.io/github/v/release/mahmadabid/vibed-puppet?color=00ffa6&labelColor=0f172a" alt="Latest Release" /></a>
@@ -78,12 +89,18 @@ npm run dist:mac     # build macOS DMG
 npm run dist:linux   # build Linux AppImage
 ```
 
-Before running `dist`, add icons to `resources/`:
-- `resources/icon.ico` — Windows
-- `resources/icon.icns` — macOS
-- `resources/icon.png` — Linux + taskbar (512×512)
+Before running `dist`, the app icons are already in `build/`:
+- `build/icon.ico` — Windows
+- `build/icon.icns` — macOS
+- `build/icon.png` — Linux + taskbar (512×512)
 
-See `resources/README.md` for conversion instructions from `logo.svg`.
+If you want to regenerate them from `logo.svg`, replace the files in `build/` with your exported app icons.
+
+For AppX/MSIX or Microsoft Store packaging, use the tile assets in `build/appx/`:
+- `build/appx/StoreLogo.png`
+- `build/appx/Square150x150Logo.png`
+- `build/appx/Square44x44Logo.png`
+- `build/appx/Wide310x150Logo.png`
 
 ---
 
