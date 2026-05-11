@@ -1,7 +1,7 @@
 // Shared types — imported by both main process and renderer.
 // Must contain NO Node.js imports.
 
-export type XOperation = 'posts' | 'replies' | 'unlike' | 'media' | 'highlights'
+export type XOperation = 'posts' | 'replies' | 'unlike' | 'unfollow' | 'media' | 'highlights'
 
 export interface XFilters {
   dateFrom?: string
@@ -18,6 +18,7 @@ export interface RunSummary {
   success: boolean
   totalDeleted: number
   totalUnliked: number
+  totalUnfollowed: number
   operations: string[]
   outputDir: string
   error?: string

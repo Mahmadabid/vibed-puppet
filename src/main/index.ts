@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, shell, dialog, nativeImage } from 'electron'
-import { join, resolve } from 'path'
-import { existsSync, rmSync, readdirSync, readFileSync, mkdirSync, writeFileSync } from 'fs'
+import { join } from 'path'
+import { existsSync, rmSync, readdirSync, readFileSync, mkdirSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { runXCleaner } from './scraper/x-cleaner'
 import type { RunSummary } from './scraper/x-cleaner'
@@ -136,7 +136,7 @@ ipcMain.handle('run-x-cleaner', async (_, opts: XCleanerOptions) => {
   } catch (err: any) {
     sendLog(`\n❌ ${err.message}\n`)
     sendStatus('error')
-    sendSummary({ success: false, totalDeleted: 0, totalUnliked: 0, operations: [], outputDir: opts.outputDir, error: err.message, durationMs: 0 })
+    sendSummary({ success: false, totalDeleted: 0, totalUnliked: 0, totalUnfollowed: 0, operations: [], outputDir: opts.outputDir, error: err.message, durationMs: 0 })
   } finally { running = false }
 
   return { ok: true }

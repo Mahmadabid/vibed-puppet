@@ -37,6 +37,14 @@ export interface UnlikedEntry {
   unlikedAt: string
 }
 
+export interface UnfollowedEntry {
+  index: number
+  handle: string
+  displayName?: string
+  profileUrl?: string
+  unfollowedAt: string
+}
+
 export interface FormField {
   label: string
   entry: string

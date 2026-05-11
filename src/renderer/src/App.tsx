@@ -7,7 +7,7 @@ import {
   Terminal, Settings, RotateCcw, Play, AlertCircle,
   CheckSquare, SlidersHorizontal, Calendar, Type,
   ArrowRight, Download, Info, Sun, Moon, Copy, Check,
-  CheckCircle, CircleX, Clock, Eye,
+  CheckCircle, CircleX, Clock, Eye, UserMinus,
 } from 'lucide-react'
 import type { XFilters, XOperation, RunSummary } from '../../shared/types'
 
@@ -129,8 +129,8 @@ function SummaryModal({ summary, onClose }: { summary: RunSummary; onClose: () =
             {summary.error}
           </div>
         )}
-        {(summary.totalDeleted > 0 || summary.totalUnliked > 0) && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+        {(summary.totalDeleted > 0 || summary.totalUnliked > 0 || summary.totalUnfollowed > 0) && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10, marginBottom: 16 }}>
             {summary.totalDeleted > 0 && (
               <div style={{ background: 'var(--color-panel-alt)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '12px 14px', textAlign: 'center' }}>
                 <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-danger)', fontFamily: 'var(--font-mono)' }}>{summary.totalDeleted}</div>
@@ -141,6 +141,12 @@ function SummaryModal({ summary, onClose }: { summary: RunSummary; onClose: () =
               <div style={{ background: 'var(--color-panel-alt)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '12px 14px', textAlign: 'center' }}>
                 <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}>{summary.totalUnliked}</div>
                 <div style={{ fontSize: 11, color: 'var(--color-muted)', marginTop: 3 }}>posts unliked</div>
+              </div>
+            )}
+            {summary.totalUnfollowed > 0 && (
+              <div style={{ background: 'var(--color-panel-alt)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '12px 14px', textAlign: 'center' }}>
+                <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-warn)', fontFamily: 'var(--font-mono)' }}>{summary.totalUnfollowed}</div>
+                <div style={{ fontSize: 11, color: 'var(--color-muted)', marginTop: 3 }}>accounts unfollowed</div>
               </div>
             )}
           </div>
@@ -265,6 +271,7 @@ const OPS: { id: XOperation; label: string; icon: ReactNode }[] = [
   { id: 'posts',      label: 'Posts & reposts', icon: <Trash2 size={12} /> },
   { id: 'replies',    label: 'Replies',          icon: <MessageSquare size={12} /> },
   { id: 'unlike',     label: 'Unlike all',       icon: <Heart size={12} /> },
+  { id: 'unfollow',   label: 'Unfollow',         icon: <UserMinus size={12} /> },
   { id: 'media',      label: 'Media tab',        icon: <Image size={12} /> },
   { id: 'highlights', label: 'Highlights',       icon: <Star size={12} /> },
 ]
@@ -378,7 +385,7 @@ function XCleanerTab({ isRunning, onRun, onStop, defaultChromePath, defaultOutpu
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} className="animate-in">
-      <PathPicker label="Output folder" value={outputDir} onChange={setOutputDir} hint="JSON logs saved here — deleted-posts.json, unliked-posts.json, etc." />
+      <PathPicker label="Output folder" value={outputDir} onChange={setOutputDir} hint="JSON logs saved here — deleted-posts.json, unliked-posts.json, unfollowed-accounts.json, etc." />
       <PathPicker label="Chrome profile folder" value={chromePath} onChange={setChromePath} hint="Stores your X login session between runs." />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -524,7 +531,7 @@ function FormsTab({ isRunning, onRun, onStop, defaultChromePath, defaultOutputPa
 // ── Results tab ───────────────────────────────────────────────────────────────
 const FILE_LABELS: Record<string, string> = {
   'deleted-posts.json': 'Posts', 'deleted-replies.json': 'Replies',
-  'unliked-posts.json': 'Unlikes', 'deleted-media.json': 'Media',
+  'unliked-posts.json': 'Unlikes', 'unfollowed-accounts.json': 'Unfollows', 'deleted-media.json': 'Media',
   'deleted-highlights.json': 'Highlights', 'form-fields.json': 'Form fields',
 }
 
@@ -779,7 +786,7 @@ function AppInner() {
   const stop     = useCallback(() => window.api.stop(), [])
 
   const meta: Record<Tab, { title: string; sub: string }> = {
-    cleaner:  { title: 'X / Twitter cleanup',    sub: 'Delete posts, replies, media, highlights. Bulk unlike.' },
+    cleaner:  { title: 'X / Twitter cleanup',    sub: 'Delete posts, replies, media, highlights. Bulk unlike and unfollow.' },
     forms:    { title: 'Google Forms extractor', sub: 'Extract field entry IDs from any Google Form — automatically.' },
     results:  { title: 'Results',                sub: 'Browse JSON logs from previous runs.' },
     settings: { title: 'Settings',               sub: 'Theme, Chrome profile, GitHub, and updates.' },

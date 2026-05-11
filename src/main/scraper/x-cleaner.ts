@@ -2,8 +2,8 @@ import puppeteer, { type Browser, type Page, type ElementHandle } from 'puppetee
 import { join } from 'path'
 import { mkdirSync, existsSync } from 'fs'
 import { sleep, findChrome, loadLog, saveLog } from './utils'
-import { injectOverlay, removeOverlay, updateOverlayMessage, pollOverlayResult } from './browser-ui'
-import type { LogFn, XCleanerOptions, XOperation, XFilters, DeletedEntry, UnlikedEntry } from './types'
+import { injectOverlay, removeOverlay, pollOverlayResult } from './browser-ui'
+import type { LogFn, XCleanerOptions, XOperation, XFilters, DeletedEntry, UnlikedEntry, UnfollowedEntry } from './types'
 import type { RunSummary } from '../../shared/types'
 export type { RunSummary }
 
@@ -513,6 +513,109 @@ async function unlikePosts(
   return count
 }
 
+// ── Unfollow accounts ────────────────────────────────────────────────────────
+
+async function unfollowAccounts(
+  page: Page, profileUrl: string, logFile: string,
+  state: { rateLimited: boolean }, deleteLimit: number, appendMode: boolean, log: LogFn,
+): Promise<number> {
+  const entries = loadLog<UnfollowedEntry>(logFile, appendMode)
+  let count = entries.length
+  let emptyScrolls = 0
+
+  log('\nNavigating to following tab…')
+  await page.goto(`${profileUrl}/following`, { waitUntil: 'domcontentloaded', timeout: 30000 })
+  try { await page.waitForSelector('button,[role="button"]', { timeout: 12000 }) }
+  catch { log('No following list — skipping.'); return 0 }
+
+  log('Starting unfollow…\n')
+
+  while (count < deleteLimit) {
+    if (state.rateLimited) { await handleRateLimit(page, state, log); continue }
+
+    const clicked = await page.evaluate(() => {
+      const candidates = Array.from(document.querySelectorAll('button,[role="button"]')) as HTMLElement[]
+      const target = candidates.find(btn => {
+        const text = (btn.innerText ?? '').trim().replace(/\s+/g, ' ')
+        const aria = (btn.getAttribute('aria-label') ?? '').trim().replace(/\s+/g, ' ')
+        return /^following$/i.test(text) || /^following$/i.test(aria)
+      })
+      if (!target) return null
+
+      const row = target.closest('[data-testid="cellInnerDiv"], [data-testid="UserCell"], article, [role="row"]')
+      const link = row?.querySelector('a[href^="/"][href*="/"]') as HTMLAnchorElement | null
+      const href = link?.getAttribute('href') ?? ''
+      const handle = href.split('?')[0].split('/').filter(Boolean)[0] ?? null
+      const displayName = (row?.querySelector('div[dir="auto"]') as HTMLElement | null)?.innerText?.trim() ?? ''
+      target.click()
+      return { handle, displayName, profileUrl: href ? `https://x.com${href}` : null }
+    }) as { handle: string | null; displayName: string; profileUrl: string | null } | null
+
+    if (!clicked?.handle) {
+      await page.evaluate(() => window.scrollBy(0, 500))
+      emptyScrolls++
+      if (emptyScrolls > 9) { log('No more followed accounts.'); break }
+      await sleep(3000)
+      continue
+    }
+
+    emptyScrolls = 0
+
+    let unfollowed = false
+    for (let retry = 0; retry < 4; retry++) {
+      try {
+        await sleep(750)
+
+        const confirmed = await page.evaluate(() => {
+          const confirm = document.querySelector('[data-testid="confirmationSheetConfirm"]') as HTMLElement | null
+          if (confirm) { confirm.click(); return true }
+
+          const buttons = Array.from(document.querySelectorAll('button,[role="button"],[role="menuitem"]')) as HTMLElement[]
+          const target = buttons.find(btn => {
+            const text = (btn.innerText ?? '').trim().replace(/\s+/g, ' ')
+            const aria = (btn.getAttribute('aria-label') ?? '').trim().replace(/\s+/g, ' ')
+            return /^unfollow(\s+@.+)?$/i.test(text) || /^unfollow(\s+@.+)?$/i.test(aria) || /unfollow/i.test(text) || /unfollow/i.test(aria)
+          })
+          if (!target) return false
+          target.click()
+          return true
+        }) as boolean
+
+        if (!confirmed) {
+          await page.keyboard.press('Escape')
+          break
+        }
+
+        await sleep(1200)
+        unfollowed = true
+        break
+      } catch {
+        await page.keyboard.press('Escape')
+        await sleep(800)
+      }
+    }
+
+    if (!unfollowed) {
+      log(`⚠️  Unfollow failed for @${clicked.handle} — retrying…`)
+      continue
+    }
+
+    count++
+    entries.push({
+      index: count,
+      handle: clicked.handle,
+      displayName: clicked.displayName || undefined,
+      profileUrl: clicked.profileUrl || undefined,
+      unfollowedAt: new Date().toISOString(),
+    })
+    log(`➖ [${count}] @${clicked.handle}`)
+    saveLog(logFile, entries)
+  }
+
+  log('✅ following: done.')
+  return count
+}
+
 // ── Public entry ──────────────────────────────────────────────────────────────
 
 export async function runXCleaner(opts: XCleanerOptions, log: LogFn): Promise<RunSummary> {
@@ -526,6 +629,7 @@ export async function runXCleaner(opts: XCleanerOptions, log: LogFn): Promise<Ru
 
   let totalDeleted = 0
   let totalUnliked = 0
+  let totalUnfollowed = 0
 
   try {
     log('\nOpening X…')
@@ -556,13 +660,14 @@ export async function runXCleaner(opts: XCleanerOptions, log: LogFn): Promise<Ru
     if (operations.includes('posts'))      totalDeleted += await deletePosts(page, profileUrl, 'posts',      out('deleted-posts.json'),      state, handle, deleteLimit, appendMode, filters, log)
     if (operations.includes('replies'))    totalDeleted += await deletePosts(page, profileUrl, 'replies',    out('deleted-replies.json'),    state, handle, deleteLimit, appendMode, filters, log)
     if (operations.includes('unlike'))     totalUnliked += await unlikePosts(page, profileUrl,               out('unliked-posts.json'),      state, deleteLimit, appendMode, log)
+    if (operations.includes('unfollow'))   totalUnfollowed += await unfollowAccounts(page, profileUrl,       out('unfollowed-accounts.json'), state, deleteLimit, appendMode, log)
     if (operations.includes('media'))      totalDeleted += await deletePosts(page, profileUrl, 'media',      out('deleted-media.json'),      state, handle, deleteLimit, appendMode, filters, log)
     if (operations.includes('highlights')) totalDeleted += await deletePosts(page, profileUrl, 'highlights', out('deleted-highlights.json'), state, handle, deleteLimit, appendMode, filters, log)
 
     log('\n✅ All operations complete.')
-    return { success: true, totalDeleted, totalUnliked, operations, outputDir, durationMs: Date.now() - startTime }
+    return { success: true, totalDeleted, totalUnliked, totalUnfollowed, operations, outputDir, durationMs: Date.now() - startTime }
   } catch (err: any) {
-    return { success: false, totalDeleted, totalUnliked, operations, outputDir, error: err.message, durationMs: Date.now() - startTime }
+    return { success: false, totalDeleted, totalUnliked, totalUnfollowed, operations, outputDir, error: err.message, durationMs: Date.now() - startTime }
   } finally {
     await browser.close()
   }

@@ -1,6 +1,6 @@
 {
   "name": "vibed-puppet",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Clean up X/Twitter history and extract Google Form fields locally with Vibed Puppet.",
   "main": "./out/main/index.js",
   "author": "Muhammad Ahmad",
@@ -87,7 +87,15 @@
     "files": [
       "out/**/*",
       "!out/**/*.map"
-    ]
+    ],
+    "appx": {
+      "applicationId": "MAhmadAbid.VibedPuppet",
+      "displayName": "Vibed Puppet",
+      "identityName": "MAhmadAbid.VibedPuppet",
+      "publisher": "CN=EDD68F08-6C61-4D4A-A22A-0850FFB27714",
+      "publisherDisplayName": "Muhammad Ahmad",
+      "backgroundColor": "#078c5e"
+    }
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
@@ -119,5 +127,5 @@
     "react-dom": "^19.2.1",
     "typescript": "^5.9.3",
     "vite": "^7.2.6"
-  }
+  } 
 }
