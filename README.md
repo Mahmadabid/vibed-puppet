@@ -102,6 +102,8 @@ For AppX/MSIX or Microsoft Store packaging, use the tile assets in `build/appx/`
 - `build/appx/Square44x44Logo.png`
 - `build/appx/Wide310x150Logo.png`
 
+Releases: This project publishes releases via GitHub Actions. The CI workflow is in `.github/workflows/main.yml`. It runs on every push to `main` and creates a draft release with the new version number from `package.json`. You can then edit the release notes and publish it manually.
+
 ---
 
 ## How it works
